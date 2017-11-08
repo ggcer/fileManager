@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../js/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../js/jquery-confirm/css/jquery-confirm.css" />
+		<link rel="stylesheet" href="../css/buttons.css" />
+	</head>
+	<body>
+		<div id="app" class="container">
+			<div class="row clearfix">
+				<div class="col-md-12 column">
+					<div class="page-header">
+						<h1>
+							远程文档 <small>/小型文档仓库</small>
+						</h1>
+					</div>
+					<form class="form-horizontal" id="login-form" action="/login" method="post" role="form">
+						<div class="form-group">
+							 <label for="inputEmail3" class="col-sm-2 control-label">用户名</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="username" name="username" v-model="username" />
+							</div>
+						</div>
+						<div class="form-group">
+							 <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+							<div class="col-sm-10">
+								<input type="password" class="form-control" id="password" name="password" v-model="password"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-sm-offset-2 col-sm-10">
+								<div class="checkbox">
+									 <label><input type="checkbox" name="isRemember"/>记住我</label>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-sm-offset-2 col-sm-10">
+								 <a href="javascript:void(0);" @click="login" class="button button-glow button-border button-rounded button-primary">登 录</a>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/vue/vue.js"></script>
+	<script type="text/javascript" src="../js/jquery/jquery.js"></script>
+	<script type="text/javascript" src="../js/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-confirm/js/jquery-confirm.js"></script>
+	<script type="text/javascript" src="../js/util/confirmUtil.js"></script>
+	<script type="text/javascript">
+		var app = new Vue({
+			el:'#app',
+			data: {
+				username: getcookie('username'),
+				password: getcookie('password')
+			},
+			methods: {
+				login: function(){
+					if(this.username == '' || this.password == ''){
+						comfirmWithSureBtn('提示', '用户名和密码不能为空');
+						return;
+					}
+					var params = $('#login-form').serialize();
+					$.ajax({
+						data: params,
+						url: '/login',
+						method: 'post',
+						dataType: 'json',
+						cache: false,
+						success: (data) => {
+							if(data.status == 1){
+								window.location.href = '/home';
+							}else{
+								comfirmWithSureBtn('登录失败', data.desc);
+							}
+						},
+						error: (jqXHR, textStatus, errorThrown) => {
+							comfirmWithSureBtn('出错啦', textStatus);
+						}
+					});
+				}
+			}
+		})
+		
+		function getcookie(objname){	//获取指定名称的cookie的值
+			var arrstr = document.cookie.split("; ");
+			for(var i = 0;i < arrstr.length;i ++){
+				var temp = arrstr[i].split("=");
+				if(temp[0] == objname) return unescape(temp[1]);
+			}
+			return '';
+		}
+		
+	</script>
+</html>
