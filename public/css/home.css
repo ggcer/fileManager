@@ -1,0 +1,71 @@
+*{
+	padding: 0;
+	margin: 0;
+}
+.table th, .table td { 
+	text-align: center;
+	vertical-align: middle!important;
+}
+.pointer{
+	cursor: pointer;
+}
+#talkMsg-scroll-wrap{
+	width: 660px;
+	height: 400px;
+	overflow: auto;
+	margin-bottom: 20px;
+}
+
+.talkMsgSelf, .talkMsgOthers{
+    position: relative;
+    padding: 20px 20px 0 20px;
+    overflow: hidden;
+}
+.talkMsgOthers .avatar, .talkMsgOthers .about-user{
+    float: left;
+}
+.talkMsgOthers .about-user{
+    margin-left: 15px;
+}
+.about-user{
+    position: relative;
+}
+
+.talkMsgSelf .avatar, .talkMsgSelf .about-user{
+    float: right;
+}
+.talkMsgSelf .about-user{
+    margin-right: 15px;
+}
+.talkMsgSelf .talkUsername-span{
+    text-align: right;
+}
+.talkMsgOthers .talkUsername-span{
+    text-align: left;
+}
+.one-message-right .talkMsg-span{
+    background-color: #95F8B9;
+    float: right;
+}
+.avatar{
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    z-index: 9999;
+
+}
+.talkUsername-span{
+    display: block;
+    font-size: 12px;
+}
+.talkMsg-span{
+    display: block;
+    padding: 10px;
+    background-color: #7ADDD8;
+    margin-top: 5px;
+    max-width: 500px;
+    z-index: 9999;
+    border-radius: 10px;
+    text-align: left;
+}

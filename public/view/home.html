@@ -7,126 +7,181 @@
 		<link rel="stylesheet" href="../js/jquery-confirm/css/jquery-confirm.css" />
 		<link rel="stylesheet" href="../js/remodal/css/remodal.css" />
 		<link rel="stylesheet" href="../js/remodal/css/remodal-default-theme.css" />
+		<link rel="stylesheet" href="../js/dropzone/css/dropzone.css" />
 		<link rel="stylesheet" href="../css/buttons.css" />
-		<style>
-			.table th, .table td { 
-				text-align: center;
-				vertical-align: middle!important;
-			}
-			.pointer{
-				cursor: pointer;
-			}
-		</style>
+		<link rel="stylesheet" href="../css/slide-bar.css" />
+		<link rel="stylesheet" href="../css/home.css" />
 	</head>
 	<body>
-		<div id="app" class="container">
-			<div class="row clearfix">
-				<div class="col-md-12 column">
-					<div class="page-header">
-						<h1>
-							远程文档 <small>/小型文档仓库</small>
-						</h1>
-					</div>
-					<ul class="nav nav-tabs">
-						<li class="active">
-							 <a href="#">文档列表</a>
-						</li>
-						<li>
-							 <a href="#">临时仓库</a>
-						</li>
-						<li>
-							 <a href="#">垃圾箱</a>
-						</li>
-						<li>
-							 <a href="#">留言板</a>
-						</li>
-						<li class="dropdown pull-right">
-							 <a href="#" data-toggle="dropdown" class="dropdown-toggle">当前用户：<span v-html="loginUsername"></span><strong class="caret"></strong></a>
-							<ul class="dropdown-menu">
-								<li>
-									 <a href="#">修改密码</a>
+		<div id="wrapper">
+	        <div class="overlay"></div>
+	    
+	        <!-- Sidebar -->
+	        <nav class="navbar navbar-inverse navbar-fixed-top" id="sidebar-wrapper" role="navigation">
+	            <ul class="nav sidebar-nav">
+	                <li class="sidebar-brand">
+	                    <a href="#">
+	                       	远程文档
+	                    </a>
+	                </li>
+	                <li>
+	                    <a href="#"><i class="fa fa-fw fa-home"></i>主页</a>
+	                </li>
+	                <li>
+	                    <a href="#modal" onclick="initNiceScroll()"><i class="fa fa-fw fa-folder"></i>在线交流/gtalk</a>
+	                </li>
+	                <li>
+	                    <a href="#"><i class="fa fa-fw fa-folder"></i>关于我们</a>
+	                </li>
+	            </ul>
+	        </nav>
+	        <!-- /#sidebar-wrapper -->
+	        <!-- Page Content -->
+	        <div id="page-content-wrapper">
+	        	<button type="button" class="hamburger is-closed animated fadeInLeft" data-toggle="offcanvas">
+	            	<span class="hamb-top"></span>
+	            	<span class="hamb-middle"></span>
+	            	<span class="hamb-bottom"></span>
+	          	</button>
+				<div id="app" class="container">
+					<div class="row clearfix">
+						<div class="col-md-12 column">
+							<div class="page-header">
+								<h1>
+									远程文档 <small>/小型文档仓库</small>
+								</h1>
+							</div>
+							<ul id="tabs" class="nav nav-tabs">
+								<li class="active">
+									 <a href="#file-list" data-toggle="tab">文档列表</a>
 								</li>
 								<li>
-									 <a href="#" @click="loginOut">退出</a>
+									 <a href="#transit-depot" data-toggle="tab">临时仓库</a>
+								</li>
+								<li>
+									 <a href="#dustbin" data-toggle="tab">垃圾箱</a>
+								</li>
+								<li>
+									 <a href="#message-board" data-toggle="tab">留言板</a>
+								</li>
+								<li class="dropdown pull-right">
+									 <a href="#" data-toggle="dropdown" class="dropdown-toggle">当前用户：<span v-html="loginUsername"></span><strong class="caret"></strong></a>
+									<ul class="dropdown-menu">
+										<li>
+											 <a href="#">修改密码</a>
+										</li>
+										<li>
+											 <a href="#" @click="loginOut">退出</a>
+										</li>
+									</ul>
 								</li>
 							</ul>
-						</li>
-					</ul>
-					<ul class="breadcrumb" style="margin-top: 20px; margin-bottom: 0;">
-						<li v-for="(item, index) in nowAddress">
-							 <a href="javascript:void(0);" @click="changePath(index)">{{item.desc}}</a>
-						</li>
-					</ul>
-					<table class="table table-hover">
-						<thead>
-							<tr>
-								<th>
-									文件名
-								</th>
-								<th>
-									文件类型
-								</th>
-								<th>
-									大小
-								</th>
-								<th>
-									创建日期
-								</th>
-								<th>
-									修改时间
-								</th>
-								<th>
-									操作
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="(item, index) in fileList" v-bind:class="{pointer: item.fileType == 2}" @click="intoFile(item.fileName, item.fileType)">
-								<td>
-									{{item.fileName}}
-								</td>
-								<td>
-									{{item.fileType | fileTypeFilter}}
-								</td>
-								<td>
-									<!--{{item.fileSize}}-->
-									未知
-								</td>
-								<td>
-									{{item.fileCreateDate}}
-								</td>
-								<td>
-									{{item.fileUpdateDate}}
-								</td>
-								<td>
-									<a href="javascript:void(0);" class="button button-glow button-rounded button-raised button-action button-small" @click.stop="downloadFile(item.fileName)">下 载</a>
-									<a href="javascript:void(0);" class="button button-glow button-rounded button-caution button-small" @click.stop="deleteFile(item.fileName, index)">删 除</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<!--<div class="progress progress-striped active">  
-                        <div class="progress-bar progress-bar-success" role="progressbar" id="downLoadProgress"  
-                             v-bind:aria-valuenow="downLoadProgress" aria-valuemin="0" aria-valuemax="100"  
-                             v-bind:style="'width:'+downLoadProgress+'%'">  
-                            <span>{{downLoadProgress}}% 下载完成</span>  
-                        </div>  
-                    </div>  -->
+							<div class="tab-content">
+								<div id="file-list" class="tab-pane fade in active">
+									<ul class="breadcrumb" style="margin-top: 20px; margin-bottom: 0;">
+										<li v-for="(item, index) in nowAddress">
+											 <a href="javascript:void(0);" @click="changePath(index)">{{item.desc}}</a>
+										</li>
+									</ul>
+									<table class="table table-hover">
+										<thead>
+											<tr>
+												<th>
+													文件名
+												</th>
+												<th>
+													文件类型
+												</th>
+												<th>
+													大小
+												</th>
+												<th>
+													创建日期
+												</th>
+												<th>
+													修改时间
+												</th>
+												<th>
+													操作
+												</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="(item, index) in fileList" v-bind:class="{pointer: item.fileType == 2}" @click="intoFile(item.fileName, item.fileType)">
+												<td>
+													{{item.fileName}}
+												</td>
+												<td>
+													{{item.fileType | fileTypeFilter}}
+												</td>
+												<td>
+													<!--{{item.fileSize}}-->
+													未知
+												</td>
+												<td>
+													{{item.fileCreateDate}}
+												</td>
+												<td>
+													{{item.fileUpdateDate}}
+												</td>
+												<td>
+													<a href="javascript:void(0);" class="button button-glow button-rounded button-raised button-action button-small" @click.stop="downloadFile(item.fileName)">下 载</a>
+													<a href="javascript:void(0);" class="button button-glow button-rounded button-caution button-small" @click.stop="deleteFile(item.fileName, index)">删 除</a>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								
+								<div id="transit-depot" class="tab-pane fade in">
+									<div class="dropzone" id="transit-depot-dropzone" style="margin-top: 20px; border-radius: 10px; font-size: 17px; letter-spacing: 2px;">
+										<div class="am-text-success dz-message">
+											将文件拖拽到此处<span style="margin: 0 8px; color: #5C9BD6;">或</span>点击打开文件管理器选择文件进行上传
+											<br><span style="font-size: 15px; color: #CCCCCC;">[ 对于文件较多的文件夹，推荐先打包成zip再上传 ]</span>
+										</div>
+									</div>
+								</div>
+								
+								<div id="dustbin" class="tab-pane fade in">
+									垃圾箱
+								</div>
+								
+								<div id="message-board" class="tab-pane fade in">
+									留言板
+								</div>
+								
+							</div>
+							
+						</div>
+					</div>
+					<div class="remodal" data-remodal-id="modal" style="padding: 20px;">
+					    <button data-remodal-action="close" class="remodal-close"></button>
+					    <div class="page-header" style="margin-top: 0; margin-bottom: 10px;">
+							<h1>
+								gtalk <small>/在线交流区</small>
+							</h1>
+						</div>
+						<div id="talkMsg-scroll-wrap">
+							<div id="talkMsg-content">
+								<div v-for="(item, index) in talkMsgList" v-bind:class="{talkMsgSelf:item.isSelfPush, talkMsgOthers:!item.isSelfPush}">
+				                    <img src="image/12.jpg" class="avatar" width="50" height="50">
+				                    <div class="about-user">
+				                        <span class="talkUsername-span">{{item.talkUsername}}</span>
+				                        <span class="talkMsg-span">{{item.talkMsg}}</span>
+				                    </div>
+				                </div>
+							</div>
+						</div>
+					    <div class="form-group">
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="talkMsg" name="talkMsg" v-model="talkMsg" />
+							</div>
+							<a href="javascript:void(0);" class="button button-glow button-rounded button-action button-small" @click.stop="sendTalkMsg">发送</a>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div class="remodal" data-remodal-id="modal">
-			    <button data-remodal-action="close" class="remodal-close"></button>
-			    <h1>Remodal</h1>
-			    <p>
-			      Flat, responsive, lightweight, fast, easy customizable modal window plugin
-			      with declarative state notation and hash tracking.
-			    </p>
-			    <br>
-			    <a class="remodal-cancel" href="javascript:void(0);">Cancel</a>
-			    <a class="remodal-confirm" href="javascript:void(0);">OK</a>
-			</div>
 		</div>
-		<!--<a href="#modal">Call the modal with data-remodal-id="modal"</a>-->
 	</body>
 	<script type="text/javascript" src="../js/vue/vue.js"></script>
 	<script type="text/javascript" src="../js/jquery/jquery.js"></script>
@@ -134,259 +189,19 @@
 	<script type="text/javascript" src="../js/jquery-confirm/js/jquery-confirm.js"></script>
 	<script type="text/javascript" src="../js/nicescroll/jquery.nicescroll.js"></script>
 	<script type="text/javascript" src="../js/remodal/js/remodal.js"></script>
+	<script type="text/javascript" src="../js/dropzone/js/dropzone.js"></script>
+	<script type="text/javascript">
+		//防止自动初始化dropzone
+		Dropzone.autoDiscover = false;
+	</script>
 	<script type="text/javascript" src="../js/util/confirmUtil.js"></script>
 	<script type="text/javascript" src="../js/golobal.js"></script>
-	<script type="text/javascript">
-		var app = new Vue({
-			el:'#app',
-			data: {
-				nowAddress: [{
-					desc: '根目录',
-					truePath: '',
-				}],
-				loginUsername: '',
-				fileList: [
-				
-				],
-				downLoadProgress: 80,
-			},
-			methods: {
-				loginOut: function(){
-					$.confirm({
-						title: '提示',
-					    content: '是否立即退出登录',
-					    autoClose: 'ok|6000',
-					    buttons: {
-		                    ok: {
-		                        text: "立即退出",
-		                        keys: ['enter'],
-		                        btnClass: 'btn-blue',
-		                        action: () => {
-		                        	$.ajax({
-										url: '/loginOut',
-										method: 'post',
-										dataType: 'json',
-										cache: false,
-										success: (data) => {
-											console.log(data);
-											if(data.status == 1){
-												console.log(`用户 ${this.loginUsername} 退出登录`);
-												window.location.href = '/';
-											}else{
-												$.alert({
-												    title: '退出登录失败',
-												    content: data.desc,
-												});
-											}
-										},
-										error: (jqXHR, textStatus, errorThrown) => {
-											$.alert({
-											    title: '出错啦',
-											    content: `服务器内部错误：${textStatus}`,
-											});
-										}
-									});
-		                        }
-		                    },
-		                    
-							cancel: {
-								text: "等会吧",
-								keys: ['ESC'],
-							}
-			           	},
-					});
-				},
-				changePath: function(index){
-					this.nowAddress = this.nowAddress.slice(0, index + 1);
-					this.loadFileList();
-				},
-				intoFile: function(fileName, fileType){
-					if(fileType == 1){
-						return false;
-					}
-					this.nowAddress.push({
-						desc: fileName,
-						truePath: fileName
-					});
-					this.loadFileList();
-				},
-				getNowFilePath: function(){
-					var filePath = '';
-					this.nowAddress.forEach(function(value, index){
-						if(index == 1){
-							filePath += value.truePath;
-						}else{
-							filePath += '/' + value.truePath;
-						}
-					});
-					return filePath;
-				},
-				loadFileList: function(){
-					var filePath = this.getNowFilePath();
-					console.log(filePath);
-					$.ajax({
-						url: '/loadFileList',
-						method: 'post',
-						dataType: 'json',
-						cache: false,
-						data: {'filePath': filePath},
-						success: (data) => {
-							console.log(data);
-							if(data.status == 1){
-								this.fileList = data.fileList;
-							}else{
-								comfirmWithSureBtn('进入文件失败', data.desc);
-							}
-						},
-						error: (jqXHR, textStatus, errorThrown) => {
-							comfirmWithSureBtn('出错啦', `服务器内部错误：${textStatus}`);
-						}
-					});
-				},
-				downloadFile: function(fileName){
-					var filePath = this.getNowFilePath();
-					if(filePath != '/'){
-						filePath += '/' + fileName;
-					}else{
-						filePath += fileName;
-					}
-					
-					console.log(filePath);
-					downloadFileByForm(filePath);
-				},
-				deleteFile: function(fileName, index){
-					$.confirm({
-						title: '提示',
-					    content: `是否删除  ${fileName}`,
-					    autoClose: 'ok|10000',
-					    buttons: {
-		                    ok: {
-		                        text: "狠心删除",
-		                        keys: ['enter'],
-		                        btnClass: 'btn-red',
-		                        action: () => {
-		                        	var filePath = this.getNowFilePath();
-									if(filePath != '/'){
-										filePath += '/' + fileName;
-									}else{
-										filePath += fileName;
-									}
-									
-									console.log(filePath);
-									$.ajax({
-										url: '/deleteFile',
-										method: 'post',
-										dataType: 'json',
-										cache: false,
-										data: {'filePath': filePath},
-										success: (data) => {
-											console.log(data);
-											if(data.status == 1){
-												this.fileList.splice(index,1);
-												comfirmWithSureBtn('文件删除成功', `文件 ${fileName} 已删除(可在垃圾箱中找回)`);
-											}else{
-												comfirmWithSureBtn('删除文件失败', data.desc);
-											}
-										},
-										error: (jqXHR, textStatus, errorThrown) => {
-											comfirmWithSureBtn('出错啦', `服务器内部错误：${textStatus}`);
-										}
-									});
-		                        }
-		                    },
-		                    
-							cancel: {
-								text: "按错了",
-								keys: ['ESC'],
-							}
-			           	},
-			       	});
-					
-				}
-			},
-			filters: {
-				fileTypeFilter: function(value){
-					if(value == 1){
-						return '文件';
-					}else if(value == 2){
-						return '文件夹';
-					}
-				},
-			},
-			beforeCreate: function(){	//组件初始化完毕后初始化页面
-				console.log('组件初始化完毕');
-				$.ajax({
-					url: '/initHome',
-					method: 'post',
-					dataType: 'json',
-					cache: false,
-					success: (data) => {
-						console.log(data);
-						if(data.status == 1){
-							this.loginUsername = data.loginUsername;
-							this.fileList = data.fileList;
-							init();
-						}else{
-							comfirmWithSureBtn('页面初始化失败', data.desc);
-						}
-					},
-					error: (jqXHR, textStatus, errorThrown) => {
-						comfirmWithSureBtn('出错啦', `服务器内部错误：${textStatus}`);
-					}
-				});
-			}
-		});
-		
-		//form表单下载文件
-		function downloadFileByForm(filePath) {
-	        var url = "/downloadFile";
-	        var form = $("<form></form>").attr("action", url).attr("method", "post");
-	        form.append($("<input></input>").attr("type", "hidden").attr("name", "filePath").attr("value", filePath));
-	        form.appendTo('body').submit().remove();
-	    }
-		
-		//获取指定名称的cookie的值
-		function getcookie(objname){	
-			var arrstr = document.cookie.split("; ");
-			for(var i = 0;i < arrstr.length;i ++){
-				var temp = arrstr[i].split("=");
-				if(temp[0] == objname) return unescape(temp[1]);
-			}
-			return '';
-		}
-		
-		
-		var ws = null;
-		function init(){
-			//websocket配置
-			if(window.WebSocket){
-	            var ws = new WebSocket('ws://' + urlPrefix + ':' + websocketPort);
-	
-	            ws.onopen = function(e){
-	                console.log("websocket 连接服务器成功");
-	            }
-	            ws.onclose = function(e){
-	                console.log("websocket 服务器关闭");
-	            }
-	            ws.onerror = function(){
-	                console.log("websocket 连接出错");
-	            }
-	
-	            ws.onmessage = function(e){
-	            	console.log("收到websocket信息：" + e.data);
-	            }
-	        }
-			$('body').niceScroll({
-		        cursorcolor: "#4B4B4B",//滚动条的颜色
-		        cursoropacitymax: 0.5, //滚动条的透明度，从0-1
-		        touchbehavior: false, //使光标拖动滚动像在台式电脑触摸设备
-		        cursorwidth: "6px", //滚动条的宽度
-		        cursorborder: "0", // 游标边框css定义
-		        cursorborderradius: "3px",//以像素为光标边界半径  圆角
-		        autohidemode: true, //是否隐藏滚动条  true的时候默认不显示滚动条，当鼠标经过的时候显示滚动条
-		        zindex:"auto",//给滚动条设置z-index值
-		        railpadding: { top:0, right:0, left:0, bottom:0 }//滚动条的位置
-		    });
-		}
-	</script>
+	<script type="text/javascript" src="../js/view-js/home.js"></script>
+	<!--<div class="progress progress-striped active">  
+	        <div class="progress-bar progress-bar-success" role="progressbar" id="downLoadProgress"  
+	             v-bind:aria-valuenow="downLoadProgress" aria-valuemin="0" aria-valuemax="100"  
+	             v-bind:style="'width:'+downLoadProgress+'%'">  
+	            <span>{{downLoadProgress}}% 下载完成</span>  
+	        </div>  
+	    </div>  -->
 </html>

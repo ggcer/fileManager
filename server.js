@@ -15,11 +15,18 @@ var archiver = require('archiver');
 // 创建 application/x-www-form-urlencoded 编码解析
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-//websocket配置
+
+var onlineUserList = [];
+//websocket配置------gtalk
 var wsServer = ws.createServer(function(conn){
+	//每当客户端和服务器端建立连接，即存储对应conn对象
+	onlineUserList.push(conn);
 	conn.on("text", function (str) {
-        console.log("websocket 收到的信息为:"+str);
-        conn.sendText('Hello');
+        console.log("websocket(gtalk) 收到的信息为:" + str);
+        //群发消息
+		onlineUserList.forEach(function(item){
+			item.sendText(str);
+		});
     })
     conn.on("close", function(code, reason) {
         console.log("websocket 关闭连接")
@@ -69,7 +76,7 @@ app.get('/', (req, res) => {
 		isRemember: req.body.isRemember
 	}
 	
-	if(user.username == 'ggc'){
+	if(user.username == 'ggc' || 'ggcer'){
 		if(user.password == '123456'){
 			if(user.isRemember == 'on'){
 				res.cookie('username', user.username, {maxAge: 7 * 24 * 3600 * 1000});	//写入用户名cookie
@@ -100,14 +107,16 @@ app.get('/', (req, res) => {
 }).post('/initHome', (req, res) => {								//初始化主页
 	var fileList = [];
 	var fileNames = fs.readdirSync('/');
-	fileNames.forEach(function(value, index){
-		var fileStat = fs.statSync('/' + value);
-		fileList.push({
-			fileName: value,
-			fileType: fileStat.isFile() ? '1' : '2',
-			fileCreateDate: formatTDate(fileStat.birthtime),
-			fileUpdateDate: formatTDate(fileStat.atime),
-		})
+	fileNames.forEach(function(fileName, index){
+		if(isNormalFile(fileName)){
+			var fileStat = fs.statSync('/' + fileName);
+			fileList.push({
+				fileName: fileName,
+				fileType: fileStat.isFile() ? '1' : '2',
+				fileCreateDate: formatTDate(fileStat.birthtime),
+				fileUpdateDate: formatTDate(fileStat.atime),
+			})
+		}
 	})
 	res.status(200).json({
 		status: 1,
@@ -125,13 +134,15 @@ app.get('/', (req, res) => {
 	var fileList = [];
 	var fileNames = fs.readdirSync(filePath);
 	fileNames.forEach(function(fileName, index){
-		var fileStat = fs.statSync(filePath + '/' + fileName);
-		fileList.push({
-			fileName: fileName,
-			fileType: fileStat.isFile() ? '1' : '2',
-			fileCreateDate: formatTDate(fileStat.birthtime),
-			fileUpdateDate: formatTDate(fileStat.atime),
-		})
+		if(isNormalFile(fileName)){
+			var fileStat = fs.statSync(filePath + '/' + fileName);
+			fileList.push({
+				fileName: fileName,
+				fileType: fileStat.isFile() ? '1' : '2',
+				fileCreateDate: formatTDate(fileStat.birthtime),
+				fileUpdateDate: formatTDate(fileStat.atime),
+			})
+		}
 	})
 	res.status(200).json({
 		status: 1,
@@ -168,8 +179,15 @@ app.get('/', (req, res) => {
 							console.log(err);
 							res.end();
 						}else{
-							console.log(`用户:${req.session.user.username} 文件------------------${filePath} 已被下载`);
-							res.end();
+							fs.unlink('tmp/' + fileName + '.zip', function(err){
+								if(err){
+									console.log(err);
+								}else{
+									console.log(`提供下载的临时文件tmp/${fileName}.zip删除成功`);
+									console.log(`用户:${req.session.user.username} 文件------------------${filePath} 已被下载`);
+									res.end();
+								}
+							})
 						}
 					});
 				});
@@ -183,6 +201,11 @@ app.get('/', (req, res) => {
 	console.log(`用户:${req.session.user.username} 即将删除文件-----------${filePath}`);
 	deleteFileOrDir(filePath);
 	console.log(`用户: ${req.session.user.username} 文件------------------${filePath} 已被删除`);
+	res.status(200).json({
+		status: 1,
+	});
+}).post('/uploadFiles', urlencodedParser, (req, res) => {			//批量上传文件夹
+	console.log(req.body);
 	res.status(200).json({
 		status: 1,
 	});
@@ -232,3 +255,11 @@ function deleteEmptyFile(filePath){
 	}
 }
 
+
+//判断是否为常规文件
+function isNormalFile(fileName){
+	if(fileName.lastIndexOf('.sys') != -1){
+		return false;
+	}
+	return true;
+}
